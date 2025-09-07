@@ -359,4 +359,41 @@ class StaticCodeAnalyser:
             for cls in self._class_nodes()
         }
 
+    def min_code_to_comment_ratio_per_class(self) -> dict[str, float]:
+        """
+        Минимальное отношение code/comment среди методов класса.
+
+        Docstring рассматривается как часть комментариев в этой метрике.
+        """
+        results: dict[str, float] = {}
+        for cls in self._class_nodes():
+            ratios: list[float] = []
+            for m in (node for node in cls.body if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))):
+                start = getattr(m, "lineno", 0)
+                end = getattr(m, "end_lineno", start)
+                code_count, comment_count = self._count_code_and_comment_lines(start, end)
+                doc = ast.get_docstring(m)
+                if doc:
+                    comment_count += len(doc.splitlines())
+                ratio = code_count / max(1, comment_count)
+                ratios.append(ratio)
+            results[f"class:{cls.name}"] = min(ratios) if ratios else 0.0
+        return results
+
+    def avg_code_to_comment_ratio_per_class(self) -> dict[str, float]:
+        """Среднее отношение code/comment среди методов класса."""
+        results: dict[str, float] = {}
+        for cls in self._class_nodes():
+            ratios: list[float] = []
+            for m in (node for node in cls.body if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))):
+                start = getattr(m, "lineno", 0)
+                end = getattr(m, "end_lineno", start)
+                code_count, comment_count = self._count_code_and_comment_lines(start, end)
+                doc = ast.get_docstring(m)
+                if doc:
+                    comment_count += len(doc.splitlines())
+                ratios.append(code_count / max(1, comment_count))
+            avg = sum(ratios) / len(ratios) if ratios else 0.0
+            results[f"class:{cls.name}"] = avg
+        return results
 
