@@ -65,3 +65,12 @@ class _AttributeFinder(_SelfVisitor):
     определён в классе); в противном случае вызывается `generic_visit`, который
     рекурсивно обходит дочерние узлы.
     """
+
+    def __init__(self) -> None:
+        """Инициализация.
+
+        `attributes: set[str]` — имена или dotted-пути атрибутов без префикса
+        `self` (напр., `'x'` или `'a.b.c'`).
+        """
+        self.attributes: set[str] = set()
+
