@@ -169,3 +169,30 @@ class StaticCodeAnalyser:
                 k: int(v) for k, v in all_cc.items() if k.startswith("class:") and "." in k
             }
         return self._method_cognitive_map_cache
+
+    def _compute_all_halstead(self) -> dict[str, tuple[float, float, float]]:
+        """
+        Запустить _QualifiedHalsteadMetricsVisitor и вернуть mapping context -> (volume, difficulty, effort).
+        Кэшируется; гарантируется наличие ключа "global".
+        """
+        if self._all_halstead_cache is None:
+            v = _QualifiedHalsteadMetricsVisitor(self.code)
+            v.visit(self.tree)
+            if "global" not in v.result:
+                v.result["global"] = (0.0, 0.0, 0.0)
+            self._all_halstead_cache = v.result
+        return self._all_halstead_cache
+
+    def _compute_method_halstead_map(self) -> dict[str, tuple[float, float, float]]:
+        """
+        Вернуть Halstead-метрики только для методов классов:
+            "class:ClassName.method" -> (volume, difficulty, effort)
+        """
+        if self._method_halstead_map_cache is None:
+            all_h = self._compute_all_halstead()
+            self._method_halstead_map_cache = {
+                k: (float(v[0]), float(v[1]), float(v[2]))
+                for k, v in all_h.items()
+                if k.startswith("class:") and "." in k
+            }
+        return self._method_halstead_map_cache
