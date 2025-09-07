@@ -181,3 +181,18 @@ class _NestingLevelVisitor(ast.NodeVisitor):
             self.traverse(node.body)
         self.traverse(node.orelse)
 
+    def visit_For(self, node: ast.For) -> None:
+        """
+        for target in iter: body else: orelse
+        """
+        self.visit(node.target)
+        self.visit(node.iter)
+        with self._block():
+            self.traverse(node.body)
+        self.traverse(node.orelse)
+
+    def visit_AsyncFor(self, node: ast.AsyncFor) -> None:
+        """
+        Async for — эквивалентно for.
+        """
+        self.visit_For(node)
