@@ -19,9 +19,9 @@ import math
 import tokenize
 import tempfile
 import os
-from src.stats_code_analyser.halstead_utils import _QualifiedHalsteadMetricsVisitor, _HalsteadTokenClassifier, \
+from stats_code_analyser.src.stats_code_analyser.halstead_utils import _QualifiedHalsteadMetricsVisitor, _HalsteadTokenClassifier, \
     _compute_volume, _compute_difficulty, _compute_halstead_metrics_from_tokens
-from src.stats_code_analyser.static_analyser import StaticCodeAnalyser
+from stats_code_analyser.src.stats_code_analyser.static_analyser import StaticCodeAnalyser
 
 
 def _tokenize_and_classify(text: str):
