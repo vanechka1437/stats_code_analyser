@@ -117,3 +117,22 @@ class _HalsteadTokenClassifier:
 
         return None
 
+
+def _count_tokens(tokens: list[tuple[str, str]]) -> tuple[set[str], set[str], int, int]:
+    """
+    Посчитать уникальные и общие количества операторов/операндов.
+
+    :param tokens: список пар (kind, token_string)
+    :return: (unique_operators, unique_operands, total_operators, total_operands)
+    """
+    unique_ops: set[str] = set()
+    unique_vals: set[str] = set()
+    total_ops = total_vals = 0
+    for kind, string in tokens:
+        if kind == "operator":
+            unique_ops.add(string)
+            total_ops += 1
+        elif kind == "operand":
+            unique_vals.add(string)
+            total_vals += 1
+    return unique_ops, unique_vals, total_ops, total_vals
