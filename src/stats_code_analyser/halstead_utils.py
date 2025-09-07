@@ -279,4 +279,43 @@ class _QualifiedHalsteadMetricsVisitor(ast.NodeVisitor):
                 # рекурсивно углубиться в остальные узлы
                 self._collect_ranges(child)
 
+    def _tokens_by_context(self) -> dict[str, list[tuple[str, str]]]:
+        """
+        Генерирует токены из self.code и распределяет их по контекстам.
+
+        :return: dict mapping context_name -> list[(kind, token_string)]
+        :algorithm:
+          - сортирует диапазоны по (depth desc, start asc, end desc) чтобы найти
+            наиболее вложенный контекст первым
+          - для каждого токена выясняет lineno и помещает токен в первый
+            диапазон, содержащий эту строку; если ни один — кладёт в "global"
+        """
+        # сортируем диапазоны для выбора наиболее вложенного подходящего
+        sorted_ranges = sorted(self._ranges, key=lambda r: (-r.depth, r.start, -r.end))
+        tokens_by_ctx: dict[str, list[tuple[str, str]]] = defaultdict(list)
+        tokens_by_ctx["global"] = []
+
+        # безопасная генерация токенов (возврат пустой структуры при ошибке)
+        try:
+            gen = tokenize.generate_tokens(io.StringIO(self.code).readline)
+        except Exception:
+            return dict(tokens_by_ctx)
+
+        for tok in gen:
+            classified = _HalsteadTokenClassifier.classify(tok.type, tok.string)
+            if not classified:
+                continue
+            kind, string = classified
+            lineno = tok.start[0]
+            assigned = False
+            for r in sorted_ranges:
+                if r.start <= lineno <= r.end:
+                    tokens_by_ctx[r.name].append((kind, string))
+                    assigned = True
+                    break
+            if not assigned:
+                tokens_by_ctx["global"].append((kind, string))
+
+        return dict(tokens_by_ctx)
+
 
