@@ -180,3 +180,28 @@ def _compute_halstead_metrics_from_tokens(tokens: list[tuple[str, str]]) -> tupl
     difficulty = _compute_difficulty(n1, total_vals, n2)
     effort = difficulty * volume
     return volume, difficulty, effort
+
+
+class _QualifiedHalsteadMetricsVisitor(ast.NodeVisitor):
+    """
+    Сборщик Halstead-метрик по квалифицированным контекстам.
+
+    Класс наследует `NodeVisitor`. Это стандартный механизм обхода AST из модуля
+    `ast`: при посещении узла `node` вызывается метод `visit_<NodeClass>` (если он
+    определён в классе); в противном случае вызывается `generic_visit`, который
+    рекурсивно обходит дочерние узлы. В этой реализации переопределены обработчики
+    для узлов, которые важны при подсчёте когнитивной сложности (функции, классы,
+    управляющие конструкции, comprehensions, вызовы и т.д.).
+
+    Контексты:
+      - "function:<name>" — обычная функция на уровне модуля
+      - "class:<Class>.<method>" — метод класса
+      - "lambda:<lineno>" или "class:<Class>.lambda:<lineno>" — лямбда, квалифицированная строкой
+
+    Техническая реализация:
+      1. Проход AST для сбора диапазонов (lineno..end_lineno) для целевых контекстов.
+         Учитываются декораторы (расширяют start/end).
+      2. Генерация токенов из исходного кода и распределение токенов по контекстам
+         — токен попадает в наиболее вложенный диапазон, содержащий его lineno.
+      3. Для каждого контекста вычисляются Halstead-метрики чистой функцией.
+    """
