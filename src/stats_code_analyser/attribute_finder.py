@@ -81,3 +81,11 @@ class _AttributeFinder(_SelfVisitor):
         self.generic_visit(node)
 
 
+class _MethodCallFinder(_SelfVisitor):
+    """Посетитель AST, собирающий вызовы методов на `self` (например, `self.foo()`).
+
+    Класс наследует `NodeVisitor`. Это стандартный механизм обхода AST из модуля
+    `ast`: при посещении узла `node` вызывается метод `visit_<NodeClass>` (если он
+    определён в классе); в противном случае вызывается `generic_visit`, который
+    рекурсивно обходит дочерние узлы.
+    """
