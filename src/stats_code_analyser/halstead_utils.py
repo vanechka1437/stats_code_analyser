@@ -318,4 +318,18 @@ class _QualifiedHalsteadMetricsVisitor(ast.NodeVisitor):
 
         return dict(tokens_by_ctx)
 
+    def visit_Module(self, node: ast.Module) -> None:
+        """
+        Точка входа: собрать диапазоны, распределить токены и посчитать метрики.
 
+        :param node: ast.Module
+        :algorithm:
+          - _collect_ranges собирает self._ranges
+          - _tokens_by_context распределяет токены из self.code по контекстам
+          - для каждого контекста вычисляет Halstead через _compute_halstead_from_tokens
+        """
+        self._collect_ranges(node)
+        tokens_by_ctx = self._tokens_by_context()
+        for ctx, tokens in tokens_by_ctx.items():
+            volume, difficulty, effort = _compute_halstead_metrics_from_tokens(tokens)
+            self.result[ctx] = (volume, difficulty, effort)
