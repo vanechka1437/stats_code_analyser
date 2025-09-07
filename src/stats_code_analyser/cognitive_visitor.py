@@ -214,3 +214,24 @@ class _CognitiveComplexityVisitor(ast.NodeVisitor):
             self.visit(stmt)
         self._rec_funcs.remove(node.name)
         self._exit_scope(saved)
+
+    # ================= Обработчики AST (публичные visit_*) =================
+
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+        """Обработчик определения функции (def)."""
+        self._visit_function_like(node)
+
+    def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:
+        """Обработчик асинхронной функции (async def)."""
+        self._visit_function_like(node)
+
+    def visit_ClassDef(self, node: ast.ClassDef) -> None:
+        """Обработчик объявления класса (class)."""
+        for dec in node.decorator_list:
+            self.visit(dec)
+        saved = self._enter_scope("class", node.name)
+        for base in node.bases:
+            self.visit(base)
+        for stmt in node.body:
+            self.visit(stmt)
+        self._exit_scope(saved)
