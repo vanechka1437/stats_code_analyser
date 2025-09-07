@@ -147,3 +147,19 @@ class _CallGraphCollector(ast.NodeVisitor):
                 self.visit(child)
             self.current_class.pop()
 
+        def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+            """
+            Обработать определение функции/метода:
+              - сформировать квалифицированное имя;
+              - зарегистрировать qual в self.defs и self.by_simple.
+            """
+            if self.current_class:
+                qual = f"class:{self.current_class[-1]}.{node.name}"
+            else:
+                qual = f"function:{node.name}"
+
+            self.defs.add(qual)
+            self.by_simple.setdefault(node.name, []).append(qual)
+
+            for child in node.body:
+                self.visit(child)
