@@ -232,3 +232,47 @@ class _CallGraphCollector(ast.NodeVisitor):
             Async def — обрабатывается как обычная функция.
             """
             self.visit_FunctionDef(node)
+
+        def visit_Call(self, node: ast.Call) -> None:
+            """
+            Обработка вызова (ast.Call).
+
+            Алгоритм разрешения цели (callees):
+              - Если func — ast.Name: разрешить по простому имени через defs_by_simple.
+              - Если func — ast.Attribute:
+                  * self.method() -> class:CurrentClass.method (если в классе)
+                  * Class.method() -> class:Class.method (если Class в class_names)
+                  * иначе — попытаться разрешить по имени атрибута (attr) через defs_by_simple.
+              - Обнаруженные цели добавляются в множество для текущего caller.
+
+            Примечание: сложные выражения (например, динамическое получение функции) не разрешаются.
+            """
+            caller = self._current_caller()
+            targets: set[str] = set()
+            func = node.func
+
+            if isinstance(func, ast.Name):
+                targets.update(self.defs_by_simple.get(func.id, []))
+
+            elif isinstance(func, ast.Attribute):
+                attr = func.attr
+                value = func.value
+
+                # self.method() -> текущий класс
+                if isinstance(value, ast.Name) and value.id == "self" and self.current_class:
+                    targets.add(f"class:{self.current_class[-1]}.{attr}")
+
+                # Class.method() -> вызов по имени класса, если класс объявлен в module
+                elif isinstance(value, ast.Name) and value.id in self.class_names:
+                    targets.add(f"class:{value.id}.{attr}")
+
+                # fallback: попытаться разрешить по простому имени атрибута
+                else:
+                    targets.update(self.defs_by_simple.get(attr, []))
+
+            # зарегистрировать найденные цели для текущего caller
+            for t in targets:
+                self.callees_by_caller[caller].add(t)
+
+            # продвинуть обход внутрь вызываемых аргументов/подвыражений
+            self.generic_visit(node)
