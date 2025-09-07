@@ -254,3 +254,33 @@ class StaticCodeAnalyser:
         """LCC для каждого top-level класса: 'class:Name' -> float"""
         return {f"class:{cls.name}": _ClassCohesionCalculator.compute_lcc(cls) for cls in self._class_nodes()}
 
+    def max_cognitive_per_class(self) -> dict[str, int]:
+        """Максимальная cognitive complexity среди методов класса: 'class:Name' -> int"""
+        method_map = self._compute_method_cognitive_map()
+        results: dict[str, int] = {}
+        for cls in self._class_nodes():
+            prefix = f"class:{cls.name}."
+            vals = [v for k, v in method_map.items() if k.startswith(prefix)]
+            results[f"class:{cls.name}"] = max(vals) if vals else 0
+        return results
+
+    def avg_cognitive_per_class(self) -> dict[str, float]:
+        """Средняя cognitive complexity методов класса: 'class:Name' -> float"""
+        method_map = self._compute_method_cognitive_map()
+        results: dict[str, float] = {}
+        for cls in self._class_nodes():
+            prefix = f"class:{cls.name}."
+            vals = [v for k, v in method_map.items() if k.startswith(prefix)]
+            avg = sum(vals) / len(vals) if vals else 0.0
+            results[f"class:{cls.name}"] = avg
+        return results
+
+    def total_cognitive_per_class(self) -> dict[str, int]:
+        """Суммарная cognitive complexity всех методов класса."""
+        method_map = self._compute_method_cognitive_map()
+        results: dict[str, int] = {}
+        for cls in self._class_nodes():
+            prefix = f"class:{cls.name}."
+            total = sum(v for k, v in method_map.items() if k.startswith(prefix))
+            results[f"class:{cls.name}"] = total
+        return results
