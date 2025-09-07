@@ -43,3 +43,18 @@ import tokenize
 from collections import defaultdict
 from dataclasses import dataclass
 
+
+@dataclass(frozen=True)
+class Range:
+    """
+    Описывает контекст (диапазон строк) в исходном файле.
+
+    :param name: Имя контекста, например "function:foo" или "class:Bar.baz"
+    :param start: начальная строка (inclusive)
+    :param end: конечная строка (inclusive)
+    :param depth: вложенность (целое) — используется для выбора самого глубокого контекста
+    """
+    name: str
+    start: int
+    end: int
+    depth: int
