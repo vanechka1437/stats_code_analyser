@@ -58,3 +58,22 @@ class Range:
     start: int
     end: int
     depth: int
+
+
+class _HalsteadTokenClassifier:
+    """
+    Классификатор токенов для Halstead-анализа.
+
+    Технические детали:
+    - Статический метод `classify` принимает значения из модуля `tokenize` и строковое
+      представление токена.
+    - Возвращает кортеж (kind, token_string), где kind ∈ {"operator", "operand"},
+      либо None для игнорируемых токенов (newlines, comments и т.п.).
+    - Правила:
+      * Игнорируем NL, NEWLINE, INDENT, DEDENT, COMMENT, ENDMARKER
+      * OP -> "operator"
+      * NAME: ключевые слова (keyword.iskeyword) считаются операторами, за исключением
+        литералов `True`, `False`, `None` — их трактуем как операнды.
+      * NUMBER, STRING -> "operand"
+    """
+
