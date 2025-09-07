@@ -183,3 +183,11 @@ class _CallGraphCollector(ast.NodeVisitor):
         Результат:
         - callees_by_caller: dict[str, set[str]]
         """
+
+        def __init__(self, defs_by_simple: dict[str, list[str]], class_names: set[str]) -> None:
+            self.current_class: list[str] = []
+            self.current_function: list[str] = []
+            self.defs_by_simple = defs_by_simple
+            self.class_names = class_names
+            self.callees_by_caller: dict[str, set[str]] = defaultdict(set)
+
