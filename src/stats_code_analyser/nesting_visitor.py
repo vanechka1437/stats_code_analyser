@@ -59,5 +59,23 @@ class _NestingLevelVisitor(ast.NodeVisitor):
           - В __enter__ увеличивает родительский _current и обновляет max_level.
           - В __exit__ уменьшает _current и защищает от отрицательных значений.
         """
+        __slots__ = ("_parent",)
+
+        def __init__(self, parent: "NestingLevelVisitor") -> None:
+            self._parent = parent
+
+        def __enter__(self) -> None:
+            p = self._parent
+            p._current += 1
+            if p._current > p.max_level:
+                p.max_level = p._current
+
+        def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+            p = self._parent
+            p._current -= 1
+            if p._current < 0:
+                p._current = 0
+            # не подавляем исключения
+            return None
 
 
