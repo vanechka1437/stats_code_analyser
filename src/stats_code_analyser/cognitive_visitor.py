@@ -321,3 +321,46 @@ class _CognitiveComplexityVisitor(ast.NodeVisitor):
         # Выйдем из всех вложенных with'ов
         for _ in node.items:
             self._nesting -= 1
+
+    def visit_ListComp(self, node: ast.ListComp) -> None:
+        """Обработчик list comprehension."""
+        self._visit_comprehension(node.generators, node.elt)
+
+    def visit_SetComp(self, node: ast.SetComp) -> None:
+        """Обработчик set comprehension."""
+        self._visit_comprehension(node.generators, node.elt)
+
+    def visit_DictComp(self, node: ast.DictComp) -> None:
+        """Обработчик dict comprehension."""
+        # не дублируем key — передаём key/value и elt = None
+        self._visit_comprehension(node.generators, None, node.key, node.value)
+
+    def visit_GeneratorExp(self, node: ast.GeneratorExp) -> None:
+        """Обработчик generator expression."""
+        self._visit_comprehension(node.generators, node.elt)
+
+    def visit_comprehension(self, node: ast.comprehension) -> None:
+        """
+        Обработчик одного comprehension-генератора.
+
+        Каждый генератор (for) считается как цикл.
+        Каждое условие (if) внутри comprehension учитывается как отдельная управляющая конструкция.
+        """
+        # За сам for в генераторе
+        self._add(1)
+        # Вход в тело этого уровня генерации
+        self._nesting += 1
+        # target и iter могут содержать выражения, которые следует обойти
+        self.visit(node.target)
+        self.visit(node.iter)
+        # каждое if в генераторе эквивалентно условию — учитываем
+        for if_clause in node.ifs:
+            # добавляем за условие и обходим булевы операции в условии
+            self._add(1)
+            self._count_bool_ops(if_clause)
+            # если внутри if есть вложенные структуры, они считаются глубже
+            self._nesting += 1
+            self.visit(if_clause)
+            self._nesting -= 1
+        # выход из уровня генератора
+        self._nesting -= 1
