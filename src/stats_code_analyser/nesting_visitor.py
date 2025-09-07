@@ -96,4 +96,12 @@ class _NestingLevelVisitor(ast.NodeVisitor):
         self.max_level: int = 0
         self._qualifier_stack: list[str] = []
 
+    # Возвращает объектный контекстный менеджер
+    def _block(self) -> _BlockCtx:
+        """
+        Создать контекстный менеджер для входа в управляющий блок.
 
+        := with self._block():
+               ...
+        """
+        return _NestingLevelVisitor._BlockCtx(self)
