@@ -89,3 +89,12 @@ class _MethodCallFinder(_SelfVisitor):
     определён в классе); в противном случае вызывается `generic_visit`, который
     рекурсивно обходит дочерние узлы.
     """
+
+    def __init__(self) -> None:
+        """Инициализация.
+
+        Атрибуты (доступны после `visit`):
+        - `called_methods: set[str]` — имена или dotted-пути вызываемых методов
+          без префикса `self` (напр., `'foo'` или `'a.b'`).
+        """
+        self.called_methods: set[str] = set()
