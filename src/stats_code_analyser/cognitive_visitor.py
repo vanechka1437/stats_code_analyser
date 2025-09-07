@@ -57,3 +57,30 @@ class _CognitiveComplexityVisitor(ast.NodeVisitor):
         "class:MyClass.function:method": <сложность метода>,
         "function:foo": <сложность функции>}
     """
+
+    def __init__(self) -> None:
+        """
+        Инициализация посетителя.
+
+        Атрибуты:
+        - result: dict[str, int]
+            Финальный словарь с парами {контекст: когнитивная_сложность}.
+        - _context: list[tuple[str, str]]
+            Стек контекстов в виде списка (kind, name), где kind — "function" или "class".
+        - _nesting: int
+            Текущий уровень вложенности управляющих конструкций.
+        - _complexity: int
+            Текущий накопитель сложности для активной области.
+        - _rec_funcs: set[str]
+            Множество имён функций, которые находятся в стеке вызова (нужно для обнаружения рекурсивных вызовов).
+        - _class_method_complexities: dict[str, int]
+            Временное хранилище суммарной сложности методов для каждого класс-контекста.
+        """
+        self.result: dict[str, int] = {}
+        self._context: list[tuple[str, str]] = []
+        self._nesting: int = 0
+        self._complexity: int = 0
+        self._rec_funcs: set[str] = set()
+        self._class_method_complexities: dict[str, int] = {}
+
+
