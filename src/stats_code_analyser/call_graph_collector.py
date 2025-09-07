@@ -205,3 +205,13 @@ class _CallGraphCollector(ast.NodeVisitor):
                     return f"class:{self.current_class[-1]}.{self.current_function[-1]}"
                 return f"function:{self.current_function[-1]}"
             return "global"
+
+        def visit_ClassDef(self, node: ast.ClassDef) -> None:
+            """
+            Обойти тело класса, поддерживая стек текущего класса.
+            """
+            self.current_class.append(node.name)
+            for child in node.body:
+                self.visit(child)
+            self.current_class.pop()
+
