@@ -274,3 +274,21 @@ class _NestingLevelVisitor(ast.NodeVisitor):
         with self._block():
             self.traverse(node.generators)
             self.visit(node.elt)
+
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+        """
+        Обход вложенной функции: её тело учитывается в подсчёте внешнего блока.
+        """
+        return self.generic_visit(node)
+
+    def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:
+        """
+        Обход async-функции.
+        """
+        return self.generic_visit(node)
+
+    def visit_ClassDef(self, node: ast.ClassDef) -> None:
+        """
+        Обход класса: его содержимое учитывается как часть внешнего блока.
+        """
+        return self.generic_visit(node)
