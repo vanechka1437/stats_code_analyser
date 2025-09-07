@@ -142,3 +142,30 @@ class StaticCodeAnalyser:
         if self._class_nodes_cache is None:
             self._class_nodes_cache = [n for n in self.tree.body if isinstance(n, ast.ClassDef)]
         return self._class_nodes_cache
+
+    def _compute_all_cognitive(self) -> dict[str, int]:
+        """
+        Запустить _CognitiveComplexityVisitor по дереву и вернуть результат mapping context->value.
+        Гарантируется наличие ключа "global" (0 при отсутствии).
+        """
+        if self._all_cognitive_cache is None:
+            v = _CognitiveComplexityVisitor()
+            v.visit(self.tree)
+            if "global" not in v.result:
+                v.result["global"] = 0
+            self._all_cognitive_cache = v.result
+        return self._all_cognitive_cache
+
+    def _compute_method_cognitive_map(self) -> dict[str, int]:
+        """
+        Вернуть cognitive complexity только для методов классов в формате:
+            "class:ClassName.method" -> int
+
+        Отбор производится по ключам, начинающимся с "class:" и содержащим точку после префикса.
+        """
+        if self._method_cognitive_map_cache is None:
+            all_cc = self._compute_all_cognitive()
+            self._method_cognitive_map_cache = {
+                k: int(v) for k, v in all_cc.items() if k.startswith("class:") and "." in k
+            }
+        return self._method_cognitive_map_cache
