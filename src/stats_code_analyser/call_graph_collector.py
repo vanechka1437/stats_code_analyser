@@ -62,3 +62,27 @@ class _CallGraphCollector(ast.NodeVisitor):
     Ограничения:
     - Не разрешаются вызовы импортированных модулей/динамические вызовы.
     """
+
+    def __init__(self) -> None:
+        """
+        Инициализация.
+
+        Атрибуты:
+        - defs_by_simple: dict[str, list[str]]
+            Mapping простого имени (например, "foo") -> список квалифицированных имён,
+            например ["function:foo", "class:Bar.foo"].
+        - class_names: set[str]
+            Набор имён классов, обнаруженных в модуле.
+        - defined_quals: set[str]
+            Множество всех найденных квалифицированных имён определений.
+        - _caller_stack: list[str]
+            Стек текущих вызвавших контекстов (не используется в текущей реализации,
+            но остаётся для расширений).
+        - graph: dict[str, set[str]]
+            Сборный граф (результат build).
+        """
+        self.defs_by_simple: dict[str, list[str]] = {}
+        self.class_names: set[str] = set()
+        self.defined_quals: set[str] = set()
+        self._caller_stack: list[str] = []
+        self.graph: dict[str, set[str]] = defaultdict(set)
