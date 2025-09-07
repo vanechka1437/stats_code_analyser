@@ -74,3 +74,6 @@ def main() -> None:
         ET.SubElement(root, "error").text = f"Неизвестная ошибка: {e}"
         tree = ET.ElementTree(root)
         tree.write(args.output, encoding='utf-8', xml_declaration=True)
+
+if __name__ == "__main__":
+    main()
