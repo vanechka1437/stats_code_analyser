@@ -98,3 +98,9 @@ class _MethodCallFinder(_SelfVisitor):
           без префикса `self` (напр., `'foo'` или `'a.b'`).
         """
         self.called_methods: set[str] = set()
+
+    def visit_Call(self, node: ast.Call) -> None:
+        dotted = self._dotted_from_attribute(node.func)
+        if dotted is not None:
+            self.called_methods.add(dotted)
+        self.generic_visit(node)
