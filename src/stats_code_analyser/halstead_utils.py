@@ -1,4 +1,4 @@
-# src/halstead_utils
+# src/stats_code_analyser/halstead_utils
 """
 Утилиты для вычисления Halstead-метрик по исходному коду Python.
 
