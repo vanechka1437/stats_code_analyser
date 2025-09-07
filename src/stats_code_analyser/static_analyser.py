@@ -241,3 +241,16 @@ class StaticCodeAnalyser:
                 continue
             code_count += 1
         return code_count, comment_count
+
+    def lcom4(self) -> dict[str, int]:
+        """LCOM4 для каждого top-level класса: 'class:Name' -> int"""
+        return {f"class:{cls.name}": _LCOM4Calculator.compute(cls) for cls in self._class_nodes()}
+
+    def tcc(self) -> dict[str, float]:
+        """TCC для каждого top-level класса: 'class:Name' -> float"""
+        return {f"class:{cls.name}": _ClassCohesionCalculator.compute_tcc(cls) for cls in self._class_nodes()}
+
+    def lcc(self) -> dict[str, float]:
+        """LCC для каждого top-level класса: 'class:Name' -> float"""
+        return {f"class:{cls.name}": _ClassCohesionCalculator.compute_lcc(cls) for cls in self._class_nodes()}
+
