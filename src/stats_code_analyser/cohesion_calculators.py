@@ -239,3 +239,21 @@ class _ClassCohesionCalculator:
         """
         total = sum(len(neigh) for neigh in graph.values())
         return total // 2
+
+    @staticmethod
+    def compute_tcc(class_node: ast.ClassDef) -> float:
+        """
+        Вычислить TCC (Tight Class Cohesion).
+
+        :param class_node: ast.ClassDef
+        :return: float — значение TCC в диапазоне [0.0, 1.0].
+        """
+        methods, method_attributes = _ClassCohesionCalculator._gather_methods_and_attributes(class_node)
+        n = len(methods)
+        if n < 2:
+            return 0.0
+
+        graph = _ClassCohesionCalculator._build_method_graph(methods, method_attributes)
+        ndc = _ClassCohesionCalculator._count_edges(graph)
+        num_pairs = n * (n - 1) / 2
+        return ndc / num_pairs if num_pairs > 0 else 0.0
