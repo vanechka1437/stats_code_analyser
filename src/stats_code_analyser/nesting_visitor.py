@@ -116,3 +116,21 @@ class _NestingLevelVisitor(ast.NodeVisitor):
         for node in nodes:
             self.visit(node)
 
+    # Публичный API
+    def measure_function(self, func_node: ast.FunctionDef | ast.AsyncFunctionDef) -> int:
+        """
+        Вычислить максимальный уровень вложенности внутри заданной функции.
+
+        :param func_node: FunctionDef | AsyncFunctionDef
+            Узел AST, представляющий функцию или async-функцию
+        :return: int
+            Максимальная глубина вложенности; 0 означает отсутствие управляющих блоков.
+        """
+        if not isinstance(func_node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            raise TypeError("measure_function ожидает ast.FunctionDef или ast.AsyncFunctionDef")
+
+        self._current = 0
+        self.max_level = 0
+
+        self.traverse(func_node.body)
+        return int(self.max_level)
