@@ -119,3 +119,14 @@ class _CallGraphCollector(ast.NodeVisitor):
             self.graph.setdefault(qual, set())
 
         return self.graph
+
+    # ---- Вспомогательный класс: сбор определений ----
+    class _DefsCollector(ast.NodeVisitor):
+        """
+        Собирает определения функций/методов и имена классов.
+
+        Результаты:
+        - defs: set[str]          — множество квалифицированных имён определений
+        - by_simple: dict[str, list[str]] — mapping простого имени -> список qual имён
+        - class_names: set[str]   — имена классов, встреченных в модуле
+        """
