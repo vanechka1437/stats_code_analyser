@@ -22,7 +22,8 @@ def main() -> None:
     """
     parser = argparse.ArgumentParser(description="Статический анализатор кода Python.")
     parser.add_argument("-f", "--file", type=str, required=True, help="Путь к Python-файлу для анализа")
-    parser.add_argument("-o", "--output", type=str, default="report.xml", help="Путь к выходному XML-файлу (по умолчанию: report.xml)")
+    parser.add_argument("-o", "--output", type=str, default="report.xml",
+                        help="Путь к выходному XML-файлу (по умолчанию: report.xml)")
     args = parser.parse_args()
 
     try:
@@ -74,6 +75,7 @@ def main() -> None:
         ET.SubElement(root, "error").text = f"Неизвестная ошибка: {e}"
         tree = ET.ElementTree(root)
         tree.write(args.output, encoding='utf-8', xml_declaration=True)
+
 
 if __name__ == "__main__":
     main()
