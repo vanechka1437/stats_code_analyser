@@ -205,3 +205,20 @@ class _NestingLevelVisitor(ast.NodeVisitor):
         with self._block():
             self.traverse(node.body)
         self.traverse(node.orelse)
+
+    def visit_With(self, node: ast.With) -> None:
+        """
+        with context_expr [as optional_vars]: body
+        """
+        for item in node.items:
+            self.visit(item.context_expr)
+            if item.optional_vars:
+                self.visit(item.optional_vars)
+        with self._block():
+            self.traverse(node.body)
+
+    def visit_AsyncWith(self, node: ast.AsyncWith) -> None:
+        """
+        async with — аналогично with.
+        """
+        self.visit_With(node)
