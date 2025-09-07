@@ -274,3 +274,18 @@ class _CognitiveComplexityVisitor(ast.NodeVisitor):
         self._add(1)
         self._count_bool_ops(node.test)
         self._visit_block(node.body, node.orelse)
+
+    def visit_Try(self, node: ast.Try) -> None:
+        """
+        Обработчик `try`-блока: сам `try` считается точкой, каждый `except` — отдельной точкой;
+        `else` и `finally` обходятся для полноты анализа.
+        """
+        self._add(1)
+        self._visit_block(node.body)
+        for h in node.handlers:
+            self._add(1)
+            self._visit_block(h.body)
+        for s in node.orelse:
+            self.visit(s)
+        for s in node.finalbody:
+            self.visit(s)
