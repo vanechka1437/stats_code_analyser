@@ -264,3 +264,13 @@ class _CognitiveComplexityVisitor(ast.NodeVisitor):
         self.visit(node.orelse)
         self._nesting -= 1
 
+    def visit_For(self, node: ast.For) -> None:
+        """Обработчик `for`-цикла."""
+        self._add(1)
+        self._visit_block(node.body, node.orelse)
+
+    def visit_While(self, node: ast.While) -> None:
+        """Обработчик `while`-цикла."""
+        self._add(1)
+        self._count_bool_ops(node.test)
+        self._visit_block(node.body, node.orelse)
