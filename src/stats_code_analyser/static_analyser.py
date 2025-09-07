@@ -134,3 +134,11 @@ class StaticCodeAnalyser:
 
         # Список строк исходного кода (1-based логика обращения в методах)
         self.code_lines: list[str] = self.code.splitlines()
+
+    def _class_nodes(self) -> list[ast.ClassDef]:
+        """
+        Возвращает список top-level ast.ClassDef в модуле (кэшируется).
+        """
+        if self._class_nodes_cache is None:
+            self._class_nodes_cache = [n for n in self.tree.body if isinstance(n, ast.ClassDef)]
+        return self._class_nodes_cache
