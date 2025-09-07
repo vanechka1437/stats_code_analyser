@@ -77,3 +77,43 @@ class _HalsteadTokenClassifier:
       * NUMBER, STRING -> "operand"
     """
 
+    @staticmethod
+    def classify(tok_type: int, tok_string: str) -> tuple[str, str] | None:
+        """
+        Классифицирует один токен.
+
+        :param tok_type: int — тип токена (из `tokenize`)
+        :param tok_string: str — лексемная строка токена
+        :return: ("operator" | "operand", token_string) или None
+        :algorithm:
+          - игнорируем синтаксические служебные токены
+          - классифицируем OP/NAME/NUMBER/STRING как оператор/операнд по правилам выше
+        """
+        # игнорируем служебные токены
+        if tok_type in (
+                tokenize.NL,
+                tokenize.NEWLINE,
+                tokenize.INDENT,
+                tokenize.DEDENT,
+                tokenize.COMMENT,
+                tokenize.ENDMARKER,
+        ):
+            return None
+
+        if tok_type == tokenize.OP:
+            return "operator", tok_string
+
+        if tok_type == tokenize.NAME:
+            # keyword.iskeyword считает True/False/None ключевыми, но такие литералы
+            # более корректно считать операндами для Halstead
+            if keyword.iskeyword(tok_string):
+                if tok_string in ("True", "False", "None"):
+                    return "operand", tok_string
+                return "operator", tok_string
+            return "operand", tok_string
+
+        if tok_type in (tokenize.NUMBER, tokenize.STRING):
+            return "operand", tok_string
+
+        return None
+
