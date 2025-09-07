@@ -123,3 +123,10 @@ class _CognitiveComplexityVisitor(ast.NodeVisitor):
 
         self._context.pop()
         self._complexity, self._nesting = saved
+
+    def _add(self, base: int = 1) -> None:
+        """
+        Увеличивает текущую сложность на `base + _nesting`.
+        Это отражает правило: вклад управляющей конструкции увеличивается с учётом глубины вложенности.
+        """
+        self._complexity += base + self._nesting
