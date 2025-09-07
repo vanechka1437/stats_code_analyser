@@ -155,3 +155,24 @@ class _LCOM4Calculator:
                         graph.setdefault(method, set()).add(last)
                         graph.setdefault(last, set()).add(method)
         return graph
+
+    @staticmethod
+    def compute(class_node: ast.ClassDef) -> int:
+        """
+        Вычислить LCOM4 для заданного класса.
+
+        :param class_node: ast.ClassDef — узел AST, описывающий класс.
+        :return: int — LCOM4 (>= 0). Возвращает 0, если класс не содержит методов.
+        """
+        methods, attributes, method_attributes, method_calls = (
+            _LCOM4Calculator._gather_methods_and_attrs(class_node)
+        )
+        if not methods:
+            return 0
+
+        graph = _LCOM4Calculator._build_lcom_graph(
+            methods, attributes, method_attributes, method_calls
+        )
+        components = _connected_components(graph)
+        methods_set = set(methods)
+        return sum(1 for comp in components if bool(comp & methods_set))
