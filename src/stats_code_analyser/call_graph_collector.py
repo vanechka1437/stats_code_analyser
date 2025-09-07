@@ -191,3 +191,17 @@ class _CallGraphCollector(ast.NodeVisitor):
             self.class_names = class_names
             self.callees_by_caller: dict[str, set[str]] = defaultdict(set)
 
+        def _current_caller(self) -> str:
+            """
+            Сформировать квалифицированное имя текущего caller.
+
+            Возвращаемое значение:
+              - "class:Class.method" — если внутри метода класса
+              - "function:<name>" — если внутри функции верхнего уровня
+              - "global" — если вызов вне функций (на уровне модуля)
+            """
+            if self.current_function:
+                if self.current_class:
+                    return f"class:{self.current_class[-1]}.{self.current_function[-1]}"
+                return f"function:{self.current_function[-1]}"
+            return "global"
