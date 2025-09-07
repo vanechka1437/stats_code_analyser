@@ -253,3 +253,24 @@ class _NestingLevelVisitor(ast.NodeVisitor):
                 if case.guard:
                     self.visit(case.guard)
                 self.traverse(case.body)
+
+    def visit_ListComp(self, node: ast.ListComp) -> None:
+        with self._block():
+            self.traverse(node.generators)
+            self.visit(node.elt)
+
+    def visit_SetComp(self, node: ast.SetComp) -> None:
+        with self._block():
+            self.traverse(node.generators)
+            self.visit(node.elt)
+
+    def visit_DictComp(self, node: ast.DictComp) -> None:
+        with self._block():
+            self.traverse(node.generators)
+            self.visit(node.key)
+            self.visit(node.value)
+
+    def visit_GeneratorExp(self, node: ast.GeneratorExp) -> None:
+        with self._block():
+            self.traverse(node.generators)
+            self.visit(node.elt)
