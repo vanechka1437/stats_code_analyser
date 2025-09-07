@@ -226,3 +226,9 @@ class _CallGraphCollector(ast.NodeVisitor):
             for child in node.body:
                 self.visit(child)
             self.current_function.pop()
+
+        def visit_AsyncFunctionDef(self, node: ast.AsyncFunctionDef) -> None:
+            """
+            Async def — обрабатывается как обычная функция.
+            """
+            self.visit_FunctionDef(node)
