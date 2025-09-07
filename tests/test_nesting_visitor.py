@@ -25,7 +25,7 @@
 
 import ast
 import pytest
-from src.stats_code_analyser.nesting_visitor import _NestingLevelVisitor
+from stats_code_analyser.src.stats_code_analyser.nesting_visitor import _NestingLevelVisitor
 
 
 def test_init():
