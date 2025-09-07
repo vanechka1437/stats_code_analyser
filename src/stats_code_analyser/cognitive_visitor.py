@@ -190,3 +190,27 @@ class _CognitiveComplexityVisitor(ast.NodeVisitor):
         if value is not None:
             self.visit(value)
         self._nesting -= 1
+
+    def _visit_function_like(self, node: ast.FunctionDef | ast.AsyncFunctionDef) -> None:
+        """
+        Общая логика обработки определения функции (обычной и async).
+
+        Порядок:
+         - пометка имени в стеке для обнаружения рекурсии
+         - обход декораторов и аннотаций
+         - вход в область функции и обход тела
+         - снятие пометки и сохранение результата.
+        """
+        self._rec_funcs.add(node.name)
+        for dec in node.decorator_list:
+            self.visit(dec)
+        saved = self._enter_scope("function", node.name)
+        for arg in node.args.args:
+            if arg.annotation:
+                self.visit(arg.annotation)
+        if node.returns:
+            self.visit(node.returns)
+        for stmt in node.body:
+            self.visit(stmt)
+        self._rec_funcs.remove(node.name)
+        self._exit_scope(saved)
