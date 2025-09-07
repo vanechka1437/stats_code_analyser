@@ -222,3 +222,21 @@ class _NestingLevelVisitor(ast.NodeVisitor):
         async with — аналогично with.
         """
         self.visit_With(node)
+
+    def visit_Try(self, node: ast.Try) -> None:
+        """
+        try / except / else / finally:
+        основной try — блок; каждый except — отдельный блок;
+        orelse и finalbody обходятся без инкремента.
+        """
+        with self._block():
+            self.traverse(node.body)
+
+        for handler in node.handlers:
+            if handler.type:
+                self.visit(handler.type)
+            with self._block():
+                self.traverse(handler.body)
+
+        self.traverse(node.orelse)
+        self.traverse(node.finalbody)
