@@ -225,4 +225,58 @@ class _QualifiedHalsteadMetricsVisitor(ast.NodeVisitor):
         self._depth = 0
         self._class_stack: list[str] = []
 
+    def _collect_ranges(self, node: ast.AST) -> None:
+        """
+        Рекурсивно обходит AST и сохраняет диапазоны для функций/лямбд/методов.
+
+        :param node: AST
+        :algorithm:
+          - при встрече FunctionDef/AsyncFunctionDef формируется Range с учётом декораторов
+          - при встрече ClassDef — имя класса кладётся в стек, продолжается обход
+          - лямбды тоже фиксируются (qualifier — номер строки)
+          - depth увеличивается на 1 при заходе в функциональный/классовый контекст
+        """
+        # итерация по дочерним узлам — рекурсивно
+        for child in ast.iter_child_nodes(node):
+            if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                start = getattr(child, "lineno", 0)
+                end = getattr(child, "end_lineno", start)
+                # учитывать декораторы
+                for dec in getattr(child, "decorator_list", ()):
+                    start = min(start, getattr(dec, "lineno", start))
+                    end = max(end, getattr(dec, "end_lineno", end))
+                if self._class_stack:
+                    name = f"class:{self._class_stack[-1]}.{child.name}"
+                else:
+                    name = f"function:{child.name}"
+                self._ranges.append(Range(name, start, end, self._depth))
+                # рекурсивный обход в теле функции (увеличиваем глубину)
+                self._depth += 1
+                self._collect_ranges(child)
+                self._depth -= 1
+
+            elif isinstance(child, ast.Lambda):
+                start = getattr(child, "lineno", 0)
+                end = getattr(child, "end_lineno", start)
+                if self._class_stack:
+                    name = f"class:{self._class_stack[-1]}.lambda:{start}"
+                else:
+                    name = f"lambda:{start}"
+                self._ranges.append(Range(name, start, end, self._depth))
+                self._depth += 1
+                self._collect_ranges(child)
+                self._depth -= 1
+
+            elif isinstance(child, ast.ClassDef):
+                # войти в класс: добавить в стек и обойти тело
+                self._class_stack.append(child.name)
+                self._depth += 1
+                self._collect_ranges(child)
+                self._depth -= 1
+                self._class_stack.pop()
+
+            else:
+                # рекурсивно углубиться в остальные узлы
+                self._collect_ranges(child)
+
 
