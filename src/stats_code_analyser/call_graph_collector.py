@@ -215,3 +215,14 @@ class _CallGraphCollector(ast.NodeVisitor):
                 self.visit(child)
             self.current_class.pop()
 
+        def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+            """
+            Обработать тело функции/метода: зарегистрировать текущий caller и обойти тело.
+            """
+            self.current_function.append(node.name)
+            caller = self._current_caller()
+            # гарантируем наличие ключа (хотя defaultdict создаст его при записи)
+            self.callees_by_caller.setdefault(caller, set())
+            for child in node.body:
+                self.visit(child)
+            self.current_function.pop()
