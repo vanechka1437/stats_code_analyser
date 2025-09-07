@@ -40,3 +40,33 @@
 import ast
 from collections import deque
 from .attribute_finders import _AttributeFinder, _MethodCallFinder
+
+
+def _connected_components(graph: dict[str, set[str]]) -> list[set[str]]:
+    """
+    Находит связные компоненты в неориентированном графе.
+
+    :param graph: Mapping node -> set(neighbours). Все вершины ожидаются
+                  присутствующими как ключи (если нет — они будут проигнорированы).
+    :return: Список множеств, каждая — связная компонента графа.
+    """
+    visited: set[str] = set()
+    components: list[set[str]] = []
+    nodes = list(graph.keys())
+    for node in nodes:
+        if node in visited:
+            continue
+        comp: set[str] = set()
+        q: deque[str] = deque([node])
+        while q:
+            cur = q.popleft()
+            if cur in visited:
+                continue
+            visited.add(cur)
+            comp.add(cur)
+            for nb in graph.get(cur, set()):
+                if nb not in visited:
+                    q.append(nb)
+        if comp:
+            components.append(comp)
+    return components
