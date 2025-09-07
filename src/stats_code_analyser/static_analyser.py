@@ -284,3 +284,28 @@ class StaticCodeAnalyser:
             total = sum(v for k, v in method_map.items() if k.startswith(prefix))
             results[f"class:{cls.name}"] = total
         return results
+
+    def sloc_per_class(self) -> dict[str, int]:
+        """SLOC класса (без blanks/comments/docstrings)."""
+        return {f"class:{cls.name}": self._node_loc(cls) for cls in self._class_nodes()}
+
+    def max_method_sloc_per_class(self) -> dict[str, int]:
+        """Максимальный SLOC среди методов класса."""
+        results: dict[str, int] = {}
+        for cls in self._class_nodes():
+            method_locs = [
+                self._node_loc(m) for m in cls.body if isinstance(m, (ast.FunctionDef, ast.AsyncFunctionDef))
+            ]
+            results[f"class:{cls.name}"] = max(method_locs) if method_locs else 0
+        return results
+
+    def avg_method_sloc_per_class(self) -> dict[str, float]:
+        """Средний SLOC методов класса."""
+        results: dict[str, float] = {}
+        for cls in self._class_nodes():
+            method_locs = [
+                self._node_loc(m) for m in cls.body if isinstance(m, (ast.FunctionDef, ast.AsyncFunctionDef))
+            ]
+            avg = sum(method_locs) / len(method_locs) if method_locs else 0.0
+            results[f"class:{cls.name}"] = avg
+        return results
