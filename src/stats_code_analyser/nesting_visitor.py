@@ -134,3 +134,35 @@ class _NestingLevelVisitor(ast.NodeVisitor):
 
         self.traverse(func_node.body)
         return int(self.max_level)
+
+    def measure_module_functions(self, module_node: ast.Module) -> dict[str, int]:
+        """
+        Собрать максимальные уровни вложенности для всех функций/async-функций в модуле.
+
+        :param module_node: Module
+            Спаршенный AST-модуль
+        :return: dict[str, int]
+            Сопоставление квалифицированного имени функции -> её максимальная глубина.
+            Квалификация: "ClassName.method" для методов и "function_name" для
+            функций верхнего уровня.
+        """
+        results: dict[str, int] = {}
+
+        def _walk(node: ast.AST) -> None:
+            for child in ast.iter_child_nodes(node):
+                if isinstance(child, ast.ClassDef):
+                    self._qualifier_stack.append(child.name)
+                    _walk(child)
+                    self._qualifier_stack.pop()
+                elif isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    if self._qualifier_stack:
+                        qname = f"{self._qualifier_stack[-1]}.{child.name}"
+                    else:
+                        qname = child.name
+                    results[qname] = self.measure_function(child)
+                    _walk(child)
+                else:
+                    _walk(child)
+
+        _walk(module_node)
+        return results
