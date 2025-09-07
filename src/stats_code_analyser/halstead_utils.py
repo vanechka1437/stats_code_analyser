@@ -205,3 +205,24 @@ class _QualifiedHalsteadMetricsVisitor(ast.NodeVisitor):
          — токен попадает в наиболее вложенный диапазон, содержащий его lineno.
       3. Для каждого контекста вычисляются Halstead-метрики чистой функцией.
     """
+
+    def __init__(self, code: str) -> None:
+        """
+        Инициализация посетителя.
+
+        :param code: исходный текст модуля (вся строка)
+        :attributes:
+          - code: str — хранит исходный код
+          - result: dict[str, tuple[float, float, float]] — итоговые метрики по контекстам
+            (ключ — имя контекста, значение — (volume, difficulty, effort))
+          - _ranges: list[Range] — накопленные диапазоны контекстов
+          - _depth: int — текущая глубина обхода (для корректного выбора вложенного контекста)
+          - _class_stack: list[str] — стек имён классов при рекурсивном обходе
+        """
+        self.code = code
+        self.result: dict[str, tuple[float, float, float]] = {}
+        self._ranges: list[Range] = []
+        self._depth = 0
+        self._class_stack: list[str] = []
+
+
