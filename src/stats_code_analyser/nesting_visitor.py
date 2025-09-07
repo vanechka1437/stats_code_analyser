@@ -240,3 +240,16 @@ class _NestingLevelVisitor(ast.NodeVisitor):
 
         self.traverse(node.orelse)
         self.traverse(node.finalbody)
+
+    def visit_Match(self, node: ast.Match) -> None:
+        """
+        match subject: case pattern [if guard]: body
+        Каждый case рассматривается как отдельный вложенный блок.
+        """
+        self.visit(node.subject)
+        for case in node.cases:
+            with self._block():
+                self.visit(case.pattern)
+                if case.guard:
+                    self.visit(case.guard)
+                self.traverse(case.body)
