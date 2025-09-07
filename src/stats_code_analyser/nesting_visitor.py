@@ -196,3 +196,12 @@ class _NestingLevelVisitor(ast.NodeVisitor):
         Async for — эквивалентно for.
         """
         self.visit_For(node)
+
+    def visit_While(self, node: ast.While) -> None:
+        """
+        while test: body else: orelse
+        """
+        self.visit(node.test)
+        with self._block():
+            self.traverse(node.body)
+        self.traverse(node.orelse)
