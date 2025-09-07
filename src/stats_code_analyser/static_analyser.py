@@ -397,3 +397,33 @@ class StaticCodeAnalyser:
             results[f"class:{cls.name}"] = avg
         return results
 
+    def response_for_class(self) -> dict[str, int]:
+        """
+        RFC (Response For a Class).
+
+        Для каждого метода выполняется DFS по графу вызовов (собранному _CallGraphCollector).
+        RFC класса = максимум размеров множеств достижимости среди его методов.
+        """
+        collector = _CallGraphCollector()
+        graph = collector.build(self.tree)  # caller -> set(callees)
+        results: dict[str, int] = {}
+
+        for cls in self._class_nodes():
+            start_nodes = [
+                f"class:{cls.name}.{m.name}"
+                for m in cls.body
+                if isinstance(m, (ast.FunctionDef, ast.AsyncFunctionDef))
+            ]
+            max_rfc = 0
+            for start in start_nodes:
+                visited: set[str] = {start}
+                stack: list[str] = [start]
+                while stack:
+                    cur = stack.pop()
+                    for callee in graph.get(cur, set()):
+                        if callee not in visited:
+                            visited.add(callee)
+                            stack.append(callee)
+                max_rfc = max(max_rfc, len(visited))
+            results[f"class:{cls.name}"] = max_rfc if start_nodes else 0
+        return results
