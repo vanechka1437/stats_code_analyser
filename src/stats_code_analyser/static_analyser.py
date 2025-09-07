@@ -309,3 +309,45 @@ class StaticCodeAnalyser:
             avg = sum(method_locs) / len(method_locs) if method_locs else 0.0
             results[f"class:{cls.name}"] = avg
         return results
+
+    def max_halstead_difficulty_per_class(self) -> dict[str, float]:
+        """Максимальная Halstead difficulty среди методов класса."""
+        method_h = self._compute_method_halstead_map()
+        results: dict[str, float] = {}
+        for cls in self._class_nodes():
+            prefix = f"class:{cls.name}."
+            diffs = [v[1] for k, v in method_h.items() if k.startswith(prefix)]
+            results[f"class:{cls.name}"] = max(diffs) if diffs else 0.0
+        return results
+
+    def max_halstead_effort_per_class(self) -> dict[str, float]:
+        """Максимальная Halstead effort среди методов класса."""
+        method_h = self._compute_method_halstead_map()
+        results: dict[str, float] = {}
+        for cls in self._class_nodes():
+            prefix = f"class:{cls.name}."
+            efforts = [v[2] for k, v in method_h.items() if k.startswith(prefix)]
+            results[f"class:{cls.name}"] = max(efforts) if efforts else 0.0
+        return results
+
+    def avg_halstead_difficulty_per_class(self) -> dict[str, float]:
+        """Средняя Halstead difficulty методов класса."""
+        method_h = self._compute_method_halstead_map()
+        results: dict[str, float] = {}
+        for cls in self._class_nodes():
+            prefix = f"class:{cls.name}."
+            diffs = [v[1] for k, v in method_h.items() if k.startswith(prefix)]
+            avg = sum(diffs) / len(diffs) if diffs else 0.0
+            results[f"class:{cls.name}"] = avg
+        return results
+
+    def avg_halstead_effort_per_class(self) -> dict[str, float]:
+        """Средняя Halstead effort методов класса."""
+        method_h = self._compute_method_halstead_map()
+        results: dict[str, float] = {}
+        for cls in self._class_nodes():
+            prefix = f"class:{cls.name}."
+            efforts = [v[2] for k, v in method_h.items() if k.startswith(prefix)]
+            avg = sum(efforts) / len(efforts) if efforts else 0.0
+            results[f"class:{cls.name}"] = avg
+        return results
