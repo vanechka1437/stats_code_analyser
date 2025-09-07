@@ -137,4 +137,13 @@ class _CallGraphCollector(ast.NodeVisitor):
             self.by_simple: dict[str, list[str]] = {}
             self.class_names: set[str] = set()
 
+        def visit_ClassDef(self, node: ast.ClassDef) -> None:
+            """
+            Обработать определение класса: запомнить имя и обойти тело.
+            """
+            self.class_names.add(node.name)
+            self.current_class.append(node.name)
+            for child in node.body:
+                self.visit(child)
+            self.current_class.pop()
 
