@@ -86,3 +86,36 @@ class _CallGraphCollector(ast.NodeVisitor):
         self.defined_quals: set[str] = set()
         self._caller_stack: list[str] = []
         self.graph: dict[str, set[str]] = defaultdict(set)
+
+    def build(self, tree: ast.AST) -> dict[str, set[str]]:
+        """
+        Построить граф вызовов для AST-дерева модуля.
+
+        :param tree: ast.AST — ожидается ast.Module (но метод работает с AST-деревом)
+        :return: dict[str, set[str]] — mapping caller -> set(callee_qual_names)
+
+        Алгоритм:
+          1. Первый проход: собрать определения через _DefsCollector.
+          2. Второй проход: собрать ребра вызовов через _CallCollector с учётом
+             ранее собранных определений и имён классов.
+          3. Обеспечить присутствие всех определённых qual-имён в возвращаемом графе.
+        """
+        # 1) собрать определения
+        defs_collector = self._DefsCollector()
+        defs_collector.visit(tree)
+        self.defs_by_simple = defs_collector.by_simple
+        self.class_names = defs_collector.class_names
+        self.defined_quals = defs_collector.defs
+
+        # 2) собрать вызовы
+        call_collector = self._CallCollector(self.defs_by_simple, self.class_names)
+        call_collector.visit(tree)
+
+        # Привести defaultdict -> обычный dict со set-значениями
+        self.graph = {k: set(v) for k, v in call_collector.callees_by_caller.items()}
+
+        # 3) гарантировать присутствие всех определённых qual-имён в графе
+        for qual in self.defined_quals:
+            self.graph.setdefault(qual, set())
+
+        return self.graph
