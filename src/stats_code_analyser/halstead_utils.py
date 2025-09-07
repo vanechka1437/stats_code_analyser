@@ -136,3 +136,21 @@ def _count_tokens(tokens: list[tuple[str, str]]) -> tuple[set[str], set[str], in
             unique_vals.add(string)
             total_vals += 1
     return unique_ops, unique_vals, total_ops, total_vals
+
+
+def _compute_volume(n_total: int, n_unique: int) -> float:
+    """
+    Вычислить Volume = N * log2(n). Возвращает 0.0, если n_unique <= 0.
+    """
+    if n_unique <= 0:
+        return 0.0
+    return n_total * math.log2(n_unique)
+
+
+def _compute_difficulty(n1_unique: int, n2_total: int, n2_unique: int) -> float:
+    """
+    Вычислить Difficulty = (n1 / 2) * (N2 / n2). Обрабатывает деление на ноль.
+    """
+    if n2_unique == 0:
+        return 0.0
+    return (n1_unique / 2.0) * (n2_total / n2_unique)
