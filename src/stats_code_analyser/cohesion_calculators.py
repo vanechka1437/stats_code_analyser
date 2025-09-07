@@ -257,3 +257,22 @@ class _ClassCohesionCalculator:
         ndc = _ClassCohesionCalculator._count_edges(graph)
         num_pairs = n * (n - 1) / 2
         return ndc / num_pairs if num_pairs > 0 else 0.0
+
+    @staticmethod
+    def compute_lcc(class_node: ast.ClassDef) -> float:
+        """
+        Вычислить LCC (Loose Class Cohesion).
+
+        :param class_node: ast.ClassDef
+        :return: float — значение LCC в диапазоне [0.0, 1.0].
+        """
+        methods, method_attributes = _ClassCohesionCalculator._gather_methods_and_attributes(class_node)
+        n = len(methods)
+        if n < 2:
+            return 0.0
+
+        graph = _ClassCohesionCalculator._build_method_graph(methods, method_attributes)
+        components = _connected_components(graph)
+        num_pic = sum(len(comp) * (len(comp) - 1) / 2 for comp in components)
+        num_pairs = n * (n - 1) / 2
+        return num_pic / num_pairs if num_pairs > 0 else 0.0
