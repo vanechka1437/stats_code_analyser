@@ -210,3 +210,21 @@ class _ClassCohesionCalculator:
                 methods.append(name)
                 method_attributes[name] = set(af.attributes)
         return methods, method_attributes
+
+    @staticmethod
+    def _build_method_graph(methods: list[str], method_attributes: dict[str, set[str]]) -> dict[str, set[str]]:
+        """
+        Ребро между m1 и m2 существует, если они используют
+        хотя бы один общий атрибут.
+
+        :param methods: list[str]
+        :param method_attributes: dict[method, set(attr)]
+        :return: dict[method, set(neighbours)]
+        """
+        graph: dict[str, set[str]] = {m: set() for m in methods}
+        for i, m1 in enumerate(methods):
+            for m2 in methods[i + 1:]:
+                if method_attributes.get(m1, set()) & method_attributes.get(m2, set()):
+                    graph[m1].add(m2)
+                    graph[m2].add(m1)
+        return graph
