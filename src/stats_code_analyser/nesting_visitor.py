@@ -50,3 +50,14 @@ class _NestingLevelVisitor(ast.NodeVisitor):
         - measure_function(func_node) -> int
         - measure_module_functions(module_node) -> dict[str, int]
     """
+
+    class _BlockCtx:
+        """
+        Внутренний объектный контекстный менеджер для изменения счётчика уровня.
+
+        Поведение:
+          - В __enter__ увеличивает родительский _current и обновляет max_level.
+          - В __exit__ уменьшает _current и защищает от отрицательных значений.
+        """
+
+
