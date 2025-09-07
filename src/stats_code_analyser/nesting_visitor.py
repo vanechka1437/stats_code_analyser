@@ -78,4 +78,22 @@ class _NestingLevelVisitor(ast.NodeVisitor):
             # не подавляем исключения
             return None
 
+    def __init__(self) -> None:
+        """
+        Инициализация.
+
+        Атрибуты
+        -------
+        _current : int
+            Текущий уровень вложенности в процессе обхода (0, если нет блоков)
+        max_level : int
+            Максимальная достигнутая глубина в текущем измерении.
+        _qualifier_stack : list[str]
+            Стек имён для построения квалифицированных имён функций при обходе
+            модуля (используется в measure_module_functions).
+        """
+        self._current: int = 0
+        self.max_level: int = 0
+        self._qualifier_stack: list[str] = []
+
 
