@@ -228,3 +228,14 @@ class _ClassCohesionCalculator:
                     graph[m1].add(m2)
                     graph[m2].add(m1)
         return graph
+
+    @staticmethod
+    def _count_edges(graph: dict[str, set[str]]) -> int:
+        """
+        Посчитать число рёбер в неориентированном графе.
+
+        :param graph: dict[node, set(neighbours)]
+        :return: int — число рёбер.
+        """
+        total = sum(len(neigh) for neigh in graph.values())
+        return total // 2
