@@ -166,3 +166,18 @@ class _NestingLevelVisitor(ast.NodeVisitor):
 
         _walk(module_node)
         return results
+
+    # visit_* для управляющих конструкций (увеличивают вложенность)
+    def visit_If(self, node: ast.If) -> None:
+        """
+        if test: body else: orelse
+
+        - посетить условие;
+        - тело body считается вложенным блоком;
+        - orelse обходится без инкремента вложенности.
+        """
+        self.visit(node.test)
+        with self._block():
+            self.traverse(node.body)
+        self.traverse(node.orelse)
+
