@@ -303,3 +303,21 @@ class _CognitiveComplexityVisitor(ast.NodeVisitor):
         if name and name in self._rec_funcs:
             self._complexity += 1
         self.generic_visit(node)
+
+    def visit_With(self, node: ast.With) -> None:
+        """Обработчик контекстного менеджера `with`."""
+        # Каждый элемент в with считается как отдельный вложенный with
+        # Поэтому для каждого элемента добавляем точку и увеличиваем nesting для тела.
+        for item in node.items:
+            self._add(1)
+            # при входе в тело этого with увеличиваем nesting
+            self._nesting += 1
+            self.visit(item.context_expr)
+            if item.optional_vars:
+                self.visit(item.optional_vars)
+        # после обработки всех items мы находимся внутри последнего with на глубине увеличенной на len(items)
+        for s in node.body:
+            self.visit(s)
+        # Выйдем из всех вложенных with'ов
+        for _ in node.items:
+            self._nesting -= 1
