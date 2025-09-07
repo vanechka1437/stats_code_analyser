@@ -176,3 +176,16 @@ class _LCOM4Calculator:
         components = _connected_components(graph)
         methods_set = set(methods)
         return sum(1 for comp in components if bool(comp & methods_set))
+
+
+class _ClassCohesionCalculator:
+    """
+    Калькулятор связности класса: TCC и LCC.
+
+    Техническая реализация:
+    - Сбор: для каждого метода собирается набор используемых атрибутов.
+    - Граф методов: вершины — методы; ребро между m1 и m2 существует,
+      если intersection(method_attributes[m1], method_attributes[m2]) != empty.
+    - TCC: доля непосредственно связанных пар (число рёбер / число пар).
+    - LCC: доля пар, находящихся в одной связной компоненте графа методов.
+    """
