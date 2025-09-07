@@ -71,3 +71,66 @@ from .cohesion_calculators import _LCOM4Calculator, _ClassCohesionCalculator
 from .call_graph_collector import _CallGraphCollector
 from .nesting_visitor import _NestingLevelVisitor
 
+
+class StaticCodeAnalyser:
+    """
+    Фасадный класс статического анализатора.
+
+    Техническая реализация
+    ----------------------
+    - Парсинг: при инициализации файл читается в память и парсится в AST (ast.parse).
+    - Ленивые вычисления: дорогостоящие операции (посетители, сбор графа) выполняются
+      по требованию и кэшируются в полях-«кэше».
+    - Связь с внешними компонентами:
+        * `_CognitiveComplexityVisitor` — собирает cognitive complexity по контекстам.
+        * `_QualifiedHalsteadMetricsVisitor` — собирает Halstead-метрики для квалифицированных контекстов.
+        * `_LCOM4Calculator`, `_ClassCohesionCalculator` — вычисляют cohesion-метрики.
+        * `_CallGraphCollector` — строит ориентированный граф вызовов для RFC.
+        * `_NestingLevelVisitor` — считает уровень вложенности для метода.
+    - Форматы имен:
+        - Функции:   "function:<name>"
+        - Методы:    "class:<Class>.<method>"
+        - Классы:    "class:<Class>"
+        - Глобальные вызовы: ключ "global" в некоторых visitor-результатах
+    - Публичный API: набор методов, возвращающих mapping 'class:Name' -> значение
+      (или mapping квалифицированных имён методов, где это уместно).
+    """
+
+    def __init__(self, filename: str) -> None:
+        """
+        Инициализация анализатора: чтение файла и парсинг в AST.
+
+        Атрибуты экземпляра (основные):
+        - code: str
+            Содержимое файла.
+        - tree: ast.Module
+            AST-представление модуля.
+        - code_lines: list[str]
+            Список строк исходного кода, используется для подсчёта SLOC и комментариев.
+        - _class_nodes_cache: list[ast.ClassDef] | None
+            Кэш списка top-level классов.
+        - _all_cognitive_cache: dict[str, int] | None
+            Кэш всех значений cognitive complexity по контекстам.
+        - _method_cognitive_map_cache: dict[str, int] | None
+            Кэш cognitive complexity для методов классов (формат "class:Cls.method" -> int).
+        - _all_halstead_cache: dict[str, tuple[float,float,float]] | None
+            Кэш Halstead-метрик по контекстам.
+        - _method_halstead_map_cache: dict[str, tuple[float, float, float]] | None
+            Halstead-метрики для методов классов.
+        """
+        with open(filename, "r", encoding="utf-8") as f:
+            self.code: str = f.read()
+        try:
+            self.tree: ast.Module = ast.parse(self.code)
+        except SyntaxError as e:
+            raise ValueError(f"Ошибка парсинга кода: {e}")
+
+        # Кэши (ленивые вычисления)
+        self._class_nodes_cache: list[ast.ClassDef] | None = None
+        self._all_cognitive_cache: dict[str, int] | None = None
+        self._method_cognitive_map_cache: dict[str, int] | None = None
+        self._all_halstead_cache: dict[str, tuple[float, float, float]] | None = None
+        self._method_halstead_map_cache: dict[str, tuple[float, float, float]] | None = None
+
+        # Список строк исходного кода (1-based логика обращения в методах)
+        self.code_lines: list[str] = self.code.splitlines()
