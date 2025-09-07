@@ -55,3 +55,13 @@ class _SelfVisitor(ast.NodeVisitor):
         if isinstance(cur, ast.Name) and cur.id == "self":
             return ".".join(reversed(parts))
         return None
+
+
+class _AttributeFinder(_SelfVisitor):
+    """Посетитель AST, собирающий явные обращения `self.<attr>`.
+
+    Класс наследует `NodeVisitor`. Это стандартный механизм обхода AST из модуля
+    `ast`: при посещении узла `node` вызывается метод `visit_<NodeClass>` (если он
+    определён в классе); в противном случае вызывается `generic_visit`, который
+    рекурсивно обходит дочерние узлы.
+    """
