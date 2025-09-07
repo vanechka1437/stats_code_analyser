@@ -130,3 +130,25 @@ class _CognitiveComplexityVisitor(ast.NodeVisitor):
         Это отражает правило: вклад управляющей конструкции увеличивается с учётом глубины вложенности.
         """
         self._complexity += base + self._nesting
+
+    def _count_bool_ops(self, node: ast.AST) -> None:
+        """
+        Рекурсивно подсчитывает вклад булевых операций (`and` / `or`) и `not`.
+
+        Для `BoolOp` с N значениями добавляется `max(0, N - 1)` (каждая дополнительная логическая
+        операция увеличивает сложность). `not` обходит свой операнд без отдельного инкремента.
+        """
+        if isinstance(node, ast.BoolOp):
+            extra = max(0, len(node.values) - 1)
+            self._complexity += extra
+            for v in node.values:
+                self._count_bool_ops(v)
+        elif isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.Not):
+            self._count_bool_ops(node.operand)
+        elif isinstance(node, ast.Compare):
+            self._count_bool_ops(node.left)
+            for c in node.comparators:
+                self._count_bool_ops(c)
+        else:
+            for ch in ast.iter_child_nodes(node):
+                self._count_bool_ops(ch)
