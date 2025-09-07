@@ -83,4 +83,10 @@ class _CognitiveComplexityVisitor(ast.NodeVisitor):
         self._rec_funcs: set[str] = set()
         self._class_method_complexities: dict[str, int] = {}
 
+    # ================= Вспомогательные методы =================
 
+    def _context_name(self) -> str:
+        """Возвращает строковое имя текущего контекста (например, "global" или "class:Cls.function:fn")."""
+        if not self._context:
+            return "global"
+        return ".".join(f"{kind}:{name}" for kind, name in self._context)
