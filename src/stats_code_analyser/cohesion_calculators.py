@@ -83,3 +83,37 @@ class _LCOM4Calculator:
       (если метод использует атрибут) и метод-метод (если метод вызывает другой метод).
     - Подсчёт LCOM4: число компонент графа, содержащих хотя бы один метод.
     """
+
+    @staticmethod
+    def _gather_methods_and_attrs(class_node: ast.ClassDef) -> \
+            tuple[list[str], set[str], dict[str, set[str]], dict[str, set[str]]]:
+        """
+        Собрать методы класса и для каждого метода — используемые атрибуты
+        и вызовы методов.
+
+        :param class_node: ast.ClassDef
+        :return: tuple:
+            - methods: list[str] — список имён методов в порядке обхода тела класса
+            - attributes: set[str] — набор всех найденных атрибутов (без префикса `self`)
+            - method_attributes: dict[method, set(attr)] — mapping метод -> используемые атрибуты
+            - method_calls: dict[method, set(dotted_names)] — mapping метод -> вызовы на self
+        """
+        methods: list[str] = []
+        attributes: set[str] = set()
+        method_attributes: dict[str, set[str]] = {}
+        method_calls: dict[str, set[str]] = {}
+
+        for item in class_node.body:
+            if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                name = item.name
+                af = _AttributeFinder()
+                af.visit(item)
+                mf = _MethodCallFinder()
+                mf.visit(item)
+
+                methods.append(name)
+                method_attributes[name] = set(af.attributes)
+                method_calls[name] = set(mf.called_methods)
+                attributes.update(af.attributes)
+
+        return methods, attributes, method_attributes, method_calls
