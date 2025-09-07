@@ -427,3 +427,21 @@ class StaticCodeAnalyser:
                 max_rfc = max(max_rfc, len(visited))
             results[f"class:{cls.name}"] = max_rfc if start_nodes else 0
         return results
+
+    def max_nesting_level_per_class(self) -> dict[str, int]:
+        """
+        Максимальный уровень вложенности (nesting) среди методов класса.
+
+        Каждый метод обрабатывается независимым экземпляром _NestingLevelVisitor.
+        """
+        results: dict[str, int] = {}
+        for cls in self._class_nodes():
+            levels: list[int] = []
+            for m in cls.body:
+                if isinstance(m, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    v = _NestingLevelVisitor()
+                    v.visit(m)
+                    levels.append(v.max_level)
+            results[f"class:{cls.name}"] = max(levels) if levels else 0
+        return results
+
