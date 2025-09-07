@@ -90,3 +90,36 @@ class _CognitiveComplexityVisitor(ast.NodeVisitor):
         if not self._context:
             return "global"
         return ".".join(f"{kind}:{name}" for kind, name in self._context)
+
+    def _enter_scope(self, kind: str, name: str) -> tuple[int, int]:
+        """
+        Вход в новую область (функция или класс).
+
+        Возвращает сохранённые значения (complexity, nesting) для восстановления при выходе.
+        """
+        saved = (self._complexity, self._nesting)
+        self._complexity = 0
+        self._nesting = 0
+        self._context.append((kind, name))
+        return saved
+
+    def _exit_scope(self, saved: tuple[int, int]) -> None:
+        """
+        Выход из области: агрегирует и сохраняет результат для текущего контекста,
+        аккумулирует вклад метода в класс (если это метод), затем восстанавливает
+        ранее сохранённое состояние.
+        """
+        ctx = self._context_name()
+        if self._context and self._context[-1][0] == "class":
+            self._complexity += self._class_method_complexities.get(ctx, 0)
+        self.result[ctx] = self._complexity
+
+        if (self._context and self._context[-1][0] == "function" and
+                len(self._context) > 1 and self._context[-2][0] == "class"):
+            class_ctx = ".".join(f"{k}:{n}" for k, n in self._context[:-1])
+            self._class_method_complexities[class_ctx] = (
+                    self._class_method_complexities.get(class_ctx, 0) + self._complexity
+            )
+
+        self._context.pop()
+        self._complexity, self._nesting = saved
