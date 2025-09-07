@@ -152,3 +152,41 @@ class _CognitiveComplexityVisitor(ast.NodeVisitor):
         else:
             for ch in ast.iter_child_nodes(node):
                 self._count_bool_ops(ch)
+
+    def _visit_block(self, body: list[ast.stmt], else_body: list[ast.stmt] | None = None) -> None:
+        """
+        Унифицированный обход блока кода: увеличивает nesting, обходит тело, уменьшает nesting.
+        `else_body` обрабатывается отдельно после уменьшения nesting.
+        """
+        self._nesting += 1
+        for stmt in body:
+            self.visit(stmt)
+        self._nesting -= 1
+        if else_body:
+            for stmt in else_body:
+                self.visit(stmt)
+
+    def _visit_comprehension(self, generators: list[ast.comprehension], elt: ast.AST,
+                             key: ast.AST | None = None, value: ast.AST | None = None) -> None:
+        """
+        Обработка comprehension'ов и generator expressions.
+
+        Поведение:
+         - учитывает одну точку за саму конструкцию
+         - входит в отдельную область (увеличивая nesting) для обхода генераторов и фильтров
+         - обходит элемент/ключ/значение comprehension'а.
+        """
+        # базовая точка за сам comprehension (как за конструкцию)
+        self._add(1)
+        # При обходе генераторов каждый генератор и каждый if внутри него будут
+        # учитываться через visit_comprehension (см. visit_comprehension)
+        self._nesting += 1
+        for gen in generators:
+            self.visit(gen)  # вызовет visit_comprehension
+        if elt is not None:
+            self.visit(elt)
+        if key is not None:
+            self.visit(key)
+        if value is not None:
+            self.visit(value)
+        self._nesting -= 1
