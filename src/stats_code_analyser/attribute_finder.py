@@ -25,3 +25,33 @@ class _SelfVisitor(ast.NodeVisitor):
     которая рекурсивно обходит дочерние узлы.
     """
 
+    @staticmethod
+    def _dotted_from_attribute(node: ast.AST) -> str | None:
+        """Надёжно извлекает dotted-путь из выражения `Attribute`, если его корень — `self`.
+
+        Рассматриваются только чистые цепочки атрибутов вида `self.x`,
+        `self.a.b.c` и т.п. Возвращаемое значение не содержит префикс `self`.
+
+        :param: node : Ожидается ast-узел. В случае, если передан другой тип, возвращается `None`.
+
+        :return: str | None: Dotted-путь (например, `'a.b'` для `self.a.b`) или `None`, если
+        выражение не соответствует шаблону `self.<...>`.
+
+        Особенности реализации
+        -----------------------
+        - Поднимаемся по цепочке `Attribute`, собирая имена `attr` справа налево,
+          затем переворачиваем собранный список.
+        - Если в основании цепочки не встретился `ast.Name(id='self')`, считаем,
+          что выражение не является чистой `self`-цепочкой (например, в
+          `self.foo().bar` основанием будет `Call`) и возвращаем `None`.
+        """
+        if not isinstance(node, ast.Attribute):
+            return None
+        parts: list[str] = []
+        cur: ast.AST | None = node
+        while isinstance(cur, ast.Attribute):
+            parts.append(cur.attr)
+            cur = cur.value
+        if isinstance(cur, ast.Name) and cur.id == "self":
+            return ".".join(reversed(parts))
+        return None
