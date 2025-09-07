@@ -117,3 +117,41 @@ class _LCOM4Calculator:
                 attributes.update(af.attributes)
 
         return methods, attributes, method_attributes, method_calls
+
+    @staticmethod
+    def _build_lcom_graph(
+            methods: list[str],
+            attributes: set[str],
+            method_attributes: dict[str, set[str]],
+            method_calls: dict[str, set[str]]
+    ) -> dict[str, set[str]]:
+        """
+        Построить граф вершин (методы + поля) для LCOM4.
+
+        :param methods: list[str]
+        :param attributes: set[str]
+        :param method_attributes: dict[method, set(attr)]
+        :param method_calls: dict[method, set(dotted_names)]
+        :return: dict[node, set(neighbours)]
+        """
+        graph: dict[str, set[str]] = {m: set() for m in methods}
+        for attr in attributes:
+            graph.setdefault(attr, set())
+
+        for method, attrs in method_attributes.items():
+            for attr in attrs:
+                graph.setdefault(method, set()).add(attr)
+                graph.setdefault(attr, set()).add(method)
+
+        methods_set = set(methods)
+        for method, calls in method_calls.items():
+            for called in calls:
+                if called in methods_set:
+                    graph.setdefault(method, set()).add(called)
+                    graph.setdefault(called, set()).add(method)
+                else:
+                    last = called.split(".")[-1]
+                    if last in methods_set:
+                        graph.setdefault(method, set()).add(last)
+                        graph.setdefault(last, set()).add(method)
+        return graph
