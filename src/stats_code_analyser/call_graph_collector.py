@@ -170,3 +170,16 @@ class _CallGraphCollector(ast.NodeVisitor):
             """
             # reuse same logic as for FunctionDef
             self.visit_FunctionDef(node)
+
+    # ---- Вспомогательный класс: сбор вызовов ----
+    class _CallCollector(ast.NodeVisitor):
+        """
+        Сборщик ребер вызовов caller -> set(callees).
+
+        Параметры конструктора:
+        - defs_by_simple: dict[str, list[str]] — mapping простого имени -> список qual имён
+        - class_names: set[str] — имена классов, обнаруженные в модуле
+
+        Результат:
+        - callees_by_caller: dict[str, set[str]]
+        """
