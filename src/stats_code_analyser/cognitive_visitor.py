@@ -235,3 +235,32 @@ class _CognitiveComplexityVisitor(ast.NodeVisitor):
         for stmt in node.body:
             self.visit(stmt)
         self._exit_scope(saved)
+
+    def visit_If(self, node: ast.If) -> None:
+        """
+        Обработчик `if` (включая `elif`/`else`).
+
+        Поведение:
+         - фиксируется точка усложнения за сам `if`
+         - учитываются булевы операции в условии
+         - обрабатываются тела и `else`/`elif`.
+        """
+        self._add(1)
+        self._count_bool_ops(node.test)
+        self._visit_block(node.body, node.orelse)
+
+    def visit_IfExp(self, node: ast.IfExp) -> None:
+        """
+        Обработчик тернарного выражения `x if cond else y`.
+
+        Тернарный `if` считается отдельной точкой усложнения;
+        условие и ветви обходятся рекурсивно с учётом вложенности.
+        """
+        self._add(1)
+        self._count_bool_ops(node.test)
+        # учитывать вложенность ветвей тернарного оператора
+        self._nesting += 1
+        self.visit(node.body)
+        self.visit(node.orelse)
+        self._nesting -= 1
+
