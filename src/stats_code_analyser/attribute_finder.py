@@ -74,3 +74,10 @@ class _AttributeFinder(_SelfVisitor):
         """
         self.attributes: set[str] = set()
 
+    def visit_Attribute(self, node: ast.Attribute) -> None:
+        dotted = self._dotted_from_attribute(node)
+        if dotted is not None:
+            self.attributes.add(dotted)
+        self.generic_visit(node)
+
+
