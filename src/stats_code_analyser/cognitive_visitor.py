@@ -364,3 +364,23 @@ class _CognitiveComplexityVisitor(ast.NodeVisitor):
             self._nesting -= 1
         # выход из уровня генератора
         self._nesting -= 1
+
+    def visit_Match(self, node: ast.Match) -> None:
+        """Обработчик конструкции `match` (Python 3.10+)."""
+        # Сам match считается управляющей конструкцией
+        self._add(1)  # сам match
+        # Важно: ветки case **не** добавляют отдельные базовые очки сложности по требованию.
+        # Однако guards (если присутствуют) содержат условия — обходим их для учёта булевых операций.
+        for case in node.cases:
+            if getattr(case, "guard", None):
+                # учитываем булеву логику в guard, но **не** добавляем +1 за сам case
+                self._count_bool_ops(case.guard)
+                # guard может содержать вложенные структуры — учтём вложенность при обходе
+                self._nesting += 1
+                self.visit(case.guard)
+                self._nesting -= 1
+            # обход тела case с увеличенной вложенностью (case сам по себе не добавляет base)
+            self._nesting += 1
+            for stmt in case.body:
+                self.visit(stmt)
+            self._nesting -= 1
