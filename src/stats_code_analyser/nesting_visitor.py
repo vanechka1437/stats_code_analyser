@@ -105,3 +105,14 @@ class _NestingLevelVisitor(ast.NodeVisitor):
                ...
         """
         return _NestingLevelVisitor._BlockCtx(self)
+
+    # Вспомогательный обход списка узлов
+    def traverse(self, nodes: list[ast.AST]) -> None:
+        """
+        Обойти последовательность AST-узлов, вызывая visit для каждого.
+
+        :param nodes: Список AST-узлов.
+        """
+        for node in nodes:
+            self.visit(node)
+
