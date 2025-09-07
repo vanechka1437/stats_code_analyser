@@ -189,3 +189,24 @@ class _ClassCohesionCalculator:
     - TCC: доля непосредственно связанных пар (число рёбер / число пар).
     - LCC: доля пар, находящихся в одной связной компоненте графа методов.
     """
+
+    @staticmethod
+    def _gather_methods_and_attributes(class_node: ast.ClassDef) -> tuple[list[str], dict[str, set[str]]]:
+        """
+        Собрать методы и наборы атрибутов, используемых каждым методом.
+
+        :param class_node: ast.ClassDef
+        :return: tuple: (methods, method_attributes)
+            - methods: list[str]
+            - method_attributes: dict[method, set(attr)]
+        """
+        methods: list[str] = []
+        method_attributes: dict[str, set[str]] = {}
+        for item in class_node.body:
+            if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                name = item.name
+                af = _AttributeFinder()
+                af.visit(item)
+                methods.append(name)
+                method_attributes[name] = set(af.attributes)
+        return methods, method_attributes
