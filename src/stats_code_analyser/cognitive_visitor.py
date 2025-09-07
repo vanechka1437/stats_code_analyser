@@ -289,3 +289,17 @@ class _CognitiveComplexityVisitor(ast.NodeVisitor):
             self.visit(s)
         for s in node.finalbody:
             self.visit(s)
+
+    def visit_Call(self, node: ast.Call) -> None:
+        """
+        Обработчик вызовов. Если имя вызываемой функции совпадает с именем функции
+        в текущем стеке (`_rec_funcs`), это рекурсивный вызов и учитывается дополнительно.
+        """
+        name = None
+        if isinstance(node.func, ast.Name):
+            name = node.func.id
+        elif isinstance(node.func, ast.Attribute):
+            name = node.func.attr
+        if name and name in self._rec_funcs:
+            self._complexity += 1
+        self.generic_visit(node)
