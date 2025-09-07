@@ -130,3 +130,11 @@ class _CallGraphCollector(ast.NodeVisitor):
         - by_simple: dict[str, list[str]] — mapping простого имени -> список qual имён
         - class_names: set[str]   — имена классов, встреченных в модуле
         """
+
+        def __init__(self) -> None:
+            self.current_class: list[str] = []
+            self.defs: set[str] = set()
+            self.by_simple: dict[str, list[str]] = {}
+            self.class_names: set[str] = set()
+
+
