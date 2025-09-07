@@ -351,3 +351,12 @@ class StaticCodeAnalyser:
             avg = sum(efforts) / len(efforts) if efforts else 0.0
             results[f"class:{cls.name}"] = avg
         return results
+
+    def number_of_methods_per_class(self) -> dict[str, int]:
+        """Число методов (FunctionDef/AsyncFunctionDef) в каждом классе."""
+        return {
+            f"class:{cls.name}": sum(1 for m in cls.body if isinstance(m, (ast.FunctionDef, ast.AsyncFunctionDef)))
+            for cls in self._class_nodes()
+        }
+
+
