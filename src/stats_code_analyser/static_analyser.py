@@ -196,3 +196,48 @@ class StaticCodeAnalyser:
                 if k.startswith("class:") and "." in k
             }
         return self._method_halstead_map_cache
+
+    def _node_loc(self, node: ast.AST) -> int:
+        """
+        Посчитать SLOC (source lines of code) для узла (ClassDef / FunctionDef / AsyncFunctionDef).
+
+        Подход:
+          - берём диапазон node.lineno .. node.end_lineno;
+          - считаем строки с кодом (inline-комментарии не уменьшают кодовую строку);
+          - вычитаем строки docstring (если есть).
+        """
+        start = getattr(node, "lineno", 0)
+        end = getattr(node, "end_lineno", start)
+        if end is None:
+            end = start
+        code_count, _ = self._count_code_and_comment_lines(start, end)
+        doc = ast.get_docstring(node)
+        if doc:
+            doc_lines = len(doc.splitlines())
+            code_count -= doc_lines
+        return max(0, code_count)
+
+    def _count_code_and_comment_lines(self, start: int, end: int) -> tuple[int, int]:
+        """
+        Вернуть (code_count, comment_count) на отрезке [start, end] (1-based).
+
+        Правила:
+        - строка с кодом и inline-комментарием считается кодовой;
+        - строки, содержащие только комментарии — считаются комментариями;
+        - пустые строки игнорируются.
+        """
+        code_count = 0
+        comment_count = 0
+        n = len(self.code_lines)
+        s = max(1, start)
+        e = min(n, end)
+        for lineno in range(s, e + 1):
+            line = self.code_lines[lineno - 1]
+            line_no_comment = line.split("#", 1)[0].strip()
+            if not line_no_comment:
+                stripped = line.strip()
+                if stripped and stripped.startswith("#"):
+                    comment_count += 1
+                continue
+            code_count += 1
+        return code_count, comment_count
