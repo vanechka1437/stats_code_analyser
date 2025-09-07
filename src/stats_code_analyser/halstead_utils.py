@@ -154,3 +154,29 @@ def _compute_difficulty(n1_unique: int, n2_total: int, n2_unique: int) -> float:
     if n2_unique == 0:
         return 0.0
     return (n1_unique / 2.0) * (n2_total / n2_unique)
+
+
+def _compute_halstead_metrics_from_tokens(tokens: list[tuple[str, str]]) -> tuple[float, float, float]:
+    """
+    Чистая функция: по списку токенов возвращает (volume, difficulty, effort).
+
+    :param tokens: список пар (kind, token_string)
+    :return: (volume, difficulty, effort)
+    :algorithm:
+      - подсчитать уникальные и общие количества (см. Halstead)
+      - при нулевой уникальности возвращать (0.0, 0.0, 0.0)
+    """
+    unique_ops, unique_vals, total_ops, total_vals = _count_tokens(tokens)
+    n1 = len(unique_ops)
+    n2 = len(unique_vals)
+
+    if n1 == 0 or n2 == 0:
+        return 0.0, 0.0, 0.0
+
+    n_unique = n1 + n2
+    n_total = total_ops + total_vals
+
+    volume = _compute_volume(n_total, n_unique)
+    difficulty = _compute_difficulty(n1, total_vals, n2)
+    effort = difficulty * volume
+    return volume, difficulty, effort
