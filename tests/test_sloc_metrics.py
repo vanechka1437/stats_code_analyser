@@ -1,7 +1,7 @@
 import pytest
 import os
 import ast
-from src.stats_code_analyser.static_analyser import StaticCodeAnalyser
+from stats_code_analyser.static_analyser import StaticCodeAnalyser
 
 """
 Тесты для подсистемы подсчёта SLOC и связанных показателей в StaticCodeAnalyser.
