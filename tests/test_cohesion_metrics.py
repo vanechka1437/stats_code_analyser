@@ -6,8 +6,8 @@
 
 import ast
 import pytest
-from stats_code_analyser.src.stats_code_analyser.cohesion_calculators import _connected_components, _LCOM4Calculator, _ClassCohesionCalculator
-from stats_code_analyser.src.stats_code_analyser.attribute_finders import _AttributeFinder
+from stats_code_analyser.cohesion_calculators import _connected_components, _LCOM4Calculator, _ClassCohesionCalculator
+from stats_code_analyser.attribute_finders import _AttributeFinder
 
 
 def parse_class(code: str) -> ast.ClassDef:
