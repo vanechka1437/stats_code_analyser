@@ -1,6 +1,6 @@
 import pytest
 import tempfile
-from stats_code_analyser.src.stats_code_analyser.static_analyser import StaticCodeAnalyser
+from stats_code_analyser.static_analyser import StaticCodeAnalyser
 
 
 # Фикстура pytest для создания временного Python-файла.
