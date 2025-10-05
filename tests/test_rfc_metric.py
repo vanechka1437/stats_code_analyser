@@ -25,7 +25,7 @@
 """
 
 import os
-from src.stats_code_analyser.static_analyser import StaticCodeAnalyser
+from stats_code_analyser.static_analyser import StaticCodeAnalyser
 
 
 def create_temp_file(code: str) -> str:
