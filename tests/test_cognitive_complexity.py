@@ -7,7 +7,7 @@
 """
 
 import ast
-from stats_code_analyser.src.stats_code_analyser.cognitive_visitor import _CognitiveComplexityVisitor
+from stats_code_analyser.cognitive_visitor import _CognitiveComplexityVisitor
 
 
 def compute_result(code: str) -> dict:
